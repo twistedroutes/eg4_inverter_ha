@@ -1,0 +1,14 @@
+{
+    "domain": "eg4_inverter",
+    "name": "EG4 Inverter",
+    "version": "0.1.0",
+    "documentation": "https://github.com/twistedroutes/eg4_inverter_ha",
+    "requirements": [
+        "eg4-inverter-api>=0.1.5"
+    ],
+    "codeowners": [
+        "@twistedroutes"
+    ],
+    "config_flow": true,
+    "iot_class": "cloud_polling"
+}

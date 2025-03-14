@@ -1,0 +1,6 @@
+LOGIN_ENDPOINT = "/WManage/api/login"
+INVERTER_RUNTIME_ENDPOINT = "/WManage/api/inverter/getInverterRuntime"
+INVERTER_ENERGY_ENDPOINT = "/WManage/api/inverter/getInverterEnergyInfo"
+INVERTER_BATTERY_ENDPOINT = "/WManage/api/battery/getBatteryInfo"
+INVERTER_PARAMETER_READ = "/WManage/web/maintain/remoteRead/read"
+INVERTER_PARAMETER_WRITE = "/WManage/web/maintain/remoteSet/write"
