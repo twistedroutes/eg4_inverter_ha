@@ -1,10 +1,15 @@
 import logging
 from typing import Any, Dict
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import DiscoveryInfoType
+
 from homeassistant.const import (
     PERCENTAGE,
     UnitOfPower,
@@ -49,87 +54,111 @@ ENERGY_SENSORS = [
     },
     {
         "key": "todayYieldingText",  # "9.2" => interpret as 9.2 kWh
-        "name": "Today Yielding",
+        "name": "Solar Generation Today",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:solar-power",
         "description": "Energy generated today (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     {
         "key": "totalYieldingText",  # e.g. "368.8" => interpret as 368.8 kWh
-        "name": "Total Yielding",
+        "name": "Solar Generation Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:solar-power",
         "description": "Lifetime energy generated (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
     },
     {
         "key": "todayDischargingText",
-        "name": "Today Discharging",
+        "name": "Battery Discharging Today",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:battery-heart",
         "description": "Energy discharged from battery today (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     {
         "key": "totalDischargingText",
-        "name": "Total Discharging",
+        "name": "Battery Discharging Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:battery-heart",
         "description": "Lifetime battery discharge (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
     },
     {
         "key": "todayChargingText",
-        "name": "Today Charging",
+        "name": "Battery Charging Today",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:battery-charging",
         "description": "Energy charged into battery today (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     {
         "key": "totalChargingText",
-        "name": "Total Charging",
+        "name": "Battery Discharging Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:battery-charging",
         "description": "Lifetime battery charge (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
     },
     {
         "key": "todayUsageText",
-        "name": "Today Usage",
+        "name": "Energy Consumption Today",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:home-import-outline",
         "description": "Energy consumed by the home today (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     {
         "key": "totalUsageText",
-        "name": "Total Usage",
+        "name": "Energy Consumption Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:home-import-outline",
         "description": "Lifetime energy consumed by the home (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
     },
     {
         "key": "todayImportText",
-        "name": "Today Imported from Grid",
+        "name": "Imported from Grid Today",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:transmission-tower-import",
         "description": "Energy imported from grid today (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     {
         "key": "totalImportText",
-        "name": "Total Imported from Grid",
+        "name": "Imported from Grid Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:transmission-tower-import",
         "description": "Lifetime energy imported from the grid (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
     },
     {
         "key": "todayExportText",
-        "name": "Today Exported to Grid",
+        "name": "Exported to Grid Today",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:transmission-tower-export",
         "description": "Energy exported to grid today (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     {
         "key": "totalExportText",
-        "name": "Total Exported to Grid",
+        "name": "Exported to Grid Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:transmission-tower-export",
         "description": "Lifetime energy exported to the grid (kWh)",
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
     },
     {
         "key": "totalCo2ReductionText",  # e.g. "367.69 kG"
@@ -552,6 +581,10 @@ class EG4PerBatterySensor(EG4BaseSensor):
         self._attr_name = sensor_def.get("name", f"{battery_sn} {key}")
         self._unit = sensor_def.get("unit")
         self._scale = sensor_def.get("scale", 1.0)
+        if sensor_def.get("device_class"):
+            self._attr_device_class = sensor_def.get("device_class")
+        if sensor_def.get("state_class"):
+            self._attr_state_class = sensor_def.get("state_class")
 
     @property
     def native_unit_of_measurement(self):
