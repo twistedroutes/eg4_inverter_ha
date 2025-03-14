@@ -3,11 +3,31 @@
 
 This custom component integrates an **EG4 Inverter** with Home Assistant. It enables you to monitor inverter metrics and status updates right from your Home Assistant dashboard.
 
+This uses an unofficial web API implementation at [https://github.com/twistedroutes/eg4_inverter_api](https://github.com/twistedroutes/eg4_inverter_api)
+
 ## Features
 
 - Retrieves status and production metrics from an EG4 Inverter.
 - Allows you to expose the inverter’s data to Home Assistant sensors.
-- Easy setup and configuration via `configuration.yaml`.
+- Easy setup and configuration via UI.
+
+<p align="center">
+  <a href="image/01.png" target="_blank">
+    <img src="image/01.png" alt="EG4 Inverter Integration Selection" height="300"/>
+  </a>
+  <a href="image/02.png" target="_blank">
+    <img src="image/02.png" alt="EG4 Configuration" height="300"/>
+  </a>
+  <a href="image/03.png" target="_blank">
+    <img src="image/03.png" alt="EG4 Added" height="300"/>
+  </a>
+  <a href="image/04.png" target="_blank">
+    <img src="image/04.png" alt="EG4 Entities" height="300"/>
+  </a>
+  <a href="image/05.png" target="_blank">
+    <img src="image/05.png" alt="EG4 Energy Dashboard" height="300"/>
+  </a>
+</p>
 
 ## Requirements
 
