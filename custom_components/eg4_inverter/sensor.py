@@ -22,6 +22,12 @@ from homeassistant.const import (
 )
 from .coordinator import EG4DataCoordinator
 from .const import DOMAIN
+from .definitions import (
+    PER_BATTERY_DEFS,
+    BATTERY_SUMMARY_SENSORS,
+    ENERGY_SENSORS,
+    RUNTIME_SENSORS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,341 +45,7 @@ def parse_float(value: Any, scale: float = 1.0) -> float | None:
 
 
 # -------------------------------------------------------------------------
-# 1) ENERGY SENSORS
-#    Data from coordinator.data["energy"]
-#    Original fields in get_inverter_energy_async() sample
-# -------------------------------------------------------------------------
-ENERGY_SENSORS = [
-    {
-        "key": "soc",
-        "name": "Battery State of Charge",
-        "unit": PERCENTAGE,
-        "device_class": "battery",  # or SensorDeviceClass.BATTERY if you import it
-        "entity_category": None,
-        "description": "Battery SoC from energy data",
-    },
-    {
-        "key": "todayYieldingText",  # "9.2" => interpret as 9.2 kWh
-        "name": "Solar Generation Today",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:solar-power",
-        "description": "Energy generated today (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL_INCREASING,
-    },
-    {
-        "key": "totalYieldingText",  # e.g. "368.8" => interpret as 368.8 kWh
-        "name": "Solar Generation Total",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:solar-power",
-        "description": "Lifetime energy generated (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL,
-    },
-    {
-        "key": "todayDischargingText",
-        "name": "Battery Discharging Today",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:battery-heart",
-        "description": "Energy discharged from battery today (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL_INCREASING,
-    },
-    {
-        "key": "totalDischargingText",
-        "name": "Battery Discharging Total",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:battery-heart",
-        "description": "Lifetime battery discharge (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL,
-    },
-    {
-        "key": "todayChargingText",
-        "name": "Battery Charging Today",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:battery-charging",
-        "description": "Energy charged into battery today (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL_INCREASING,
-    },
-    {
-        "key": "totalChargingText",
-        "name": "Battery Discharging Total",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:battery-charging",
-        "description": "Lifetime battery charge (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL,
-    },
-    {
-        "key": "todayUsageText",
-        "name": "Energy Consumption Today",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:home-import-outline",
-        "description": "Energy consumed by the home today (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL_INCREASING,
-    },
-    {
-        "key": "totalUsageText",
-        "name": "Energy Consumption Total",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:home-import-outline",
-        "description": "Lifetime energy consumed by the home (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL,
-    },
-    {
-        "key": "todayImportText",
-        "name": "Imported from Grid Today",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:transmission-tower-import",
-        "description": "Energy imported from grid today (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL_INCREASING,
-    },
-    {
-        "key": "totalImportText",
-        "name": "Imported from Grid Total",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:transmission-tower-import",
-        "description": "Lifetime energy imported from the grid (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL,
-    },
-    {
-        "key": "todayExportText",
-        "name": "Exported to Grid Today",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:transmission-tower-export",
-        "description": "Energy exported to grid today (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL_INCREASING,
-    },
-    {
-        "key": "totalExportText",
-        "name": "Exported to Grid Total",
-        "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "icon": "mdi:transmission-tower-export",
-        "description": "Lifetime energy exported to the grid (kWh)",
-        "device_class": SensorDeviceClass.ENERGY,
-        "state_class": SensorStateClass.TOTAL,
-    },
-    {
-        "key": "totalCo2ReductionText",  # e.g. "367.69 kG"
-        "name": "CO2 Reduction",
-        "unit": UnitOfMass.KILOGRAMS,
-        "icon": "mdi:molecule-co2",
-        "description": "Total CO2 reduction in kg",
-        "co2_parse": True,  # We'll parse the numeric portion
-    },
-    {
-        "key": "totalCoalReductionText",  # e.g. "147.52 kG"
-        "name": "Coal Reduction",
-        "unit": UnitOfMass.KILOGRAMS,
-        "icon": "mdi:factory",
-        "description": "Total coal reduction in kg",
-        "co2_parse": True,
-    },
-]
-
-# -------------------------------------------------------------------------
-# 2) RUNTIME SENSORS
-#    Data from coordinator.data["runtime"]
-#    Original fields in get_inverter_runtime_async() sample
-# -------------------------------------------------------------------------
-RUNTIME_SENSORS = [
-    {
-        "key": "lost",
-        "name": "Inverter Lost State (Raw)",
-        "unit": None,
-        "icon": "mdi:alert",
-        "description": "Indicates if inverter is lost/offline (True/False)",
-    },
-    {
-        "key": "statusText",
-        "name": "Inverter Status Text",
-        "unit": None,
-        "icon": "mdi:information-outline",
-    },
-    {
-        "key": "batteryType",
-        "name": "Battery Type",
-        "unit": None,
-    },
-    {
-        "key": "batCapacity",  # Raw Amp-hours from the device
-        "name": "Battery Capacity",
-        "unit": "kWh",
-        "icon": "mdi:battery",  # or an appropriate icon
-        "scale": 0.0512,  # 51.2 / 1000
-        "description": "Battery capacity in kWh (converted from Ah at 51.2V nominal)",
-    },
-    {
-        "key": "vpv1",
-        "name": "PV1 Voltage",
-        "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,  # if 2098 => 20.98, adjust if needed
-        "icon": "mdi:solar-panel",
-    },
-    {
-        "key": "vpv2",
-        "name": "PV2 Voltage",
-        "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,
-        "icon": "mdi:solar-panel",
-    },
-    {
-        "key": "vpv3",
-        "name": "PV3 Voltage",
-        "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,
-        "icon": "mdi:solar-panel",
-    },
-    {
-        "key": "ppv1",
-        "name": "PV1 Power",
-        "unit": UnitOfPower.WATT,
-        "icon": "mdi:flash",
-    },
-    {
-        "key": "ppv2",
-        "name": "PV2 Power",
-        "unit": UnitOfPower.WATT,
-        "icon": "mdi:flash",
-    },
-    {
-        "key": "ppv3",
-        "name": "PV3 Power",
-        "unit": UnitOfPower.WATT,
-        "icon": "mdi:flash",
-    },
-    {
-        "key": "vact",  # e.g. 6145 => 61.45 V? Or is it AC voltage in 0.1?
-        "name": "AC Total Voltage",
-        "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,
-    },
-    {
-        "key": "fac",
-        "name": "AC Frequency",
-        "unit": UnitOfFrequency.HERTZ,
-        "scale": 0.01,
-    },
-    {
-        "key": "pToGrid",
-        "name": "Power to Grid",
-        "unit": UnitOfPower.WATT,
-        "icon": "mdi:transmission-tower-export",
-    },
-    {
-        "key": "pToUser",
-        "name": "Power to User Load",
-        "unit": UnitOfPower.WATT,
-        "icon": "mdi:home-import-outline",
-    },
-    {
-        "key": "tradiator1",
-        "name": "Radiator Temp 1",
-        "unit": UnitOfTemperature.CELSIUS,
-    },
-    {
-        "key": "tradiator2",
-        "name": "Radiator Temp 2",
-        "unit": UnitOfTemperature.CELSIUS,
-    },
-    {
-        "key": "soc",
-        "name": "Runtime SoC",
-        "unit": PERCENTAGE,
-        "description": "Battery SoC from runtime data",
-    },
-    {
-        "key": "vBat",
-        "name": "Battery Voltage (Raw)",
-        "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.1,  # 530 => 53.0
-    },
-    {
-        "key": "pCharge",
-        "name": "Battery Charging Power",
-        "unit": UnitOfPower.WATT,
-    },
-    {
-        "key": "pDisCharge",
-        "name": "Battery Discharging Power",
-        "unit": UnitOfPower.WATT,
-    },
-    {
-        "key": "batPower",
-        "name": "Battery Power (Net)",
-        "unit": UnitOfPower.WATT,
-        "description": "Negative => Discharging, Positive => Charging",
-    },
-    {
-        "key": "maxChgCurrValue",
-        "name": "Max Charge Current",
-        "unit": "A",  # or UnitOfElectricCurrent.AMPERE
-    },
-    {
-        "key": "maxDischgCurrValue",
-        "name": "Max Discharge Current",
-        "unit": "A",
-    },
-    {
-        "key": "genVolt",
-        "name": "Generator Voltage",
-        "unit": UnitOfElectricPotential.VOLT,
-    },
-    {
-        "key": "genFreq",
-        "name": "Generator Frequency",
-        "unit": UnitOfFrequency.HERTZ,
-    },
-    {
-        "key": "consumptionPower",
-        "name": "Consumption Power",
-        "unit": UnitOfPower.WATT,
-        "description": "Load consumption power if provided",
-    },
-]
-
-# -------------------------------------------------------------------------
-# 3) BATTERY SUMMARY SENSORS
-#    Data from coordinator.data["battery"] (the high-level summary),
-#    not the per-battery details in battery["battery_units"].
-# -------------------------------------------------------------------------
-BATTERY_SUMMARY_SENSORS = [
-    {
-        "key": "remainCapacity",
-        "name": "Battery Remain Capacity",
-        "unit": "kWh",
-        "scale": 0.0512,
-    },
-    {
-        "key": "fullCapacity",
-        "name": "Battery Full Capacity",
-        "unit": "kWh",
-        "icon": "mdi:battery",  # or an appropriate icon
-        "scale": 0.0512,
-    },
-    {
-        "key": "currentText",
-        "name": "Battery Current Text",
-        "unit": "A",
-        "description": "String representation of current, e.g. '-5.1'",
-    },
-    {
-        "key": "totalVoltageText",
-        "name": "Battery Voltage (Text)",
-        "unit": UnitOfElectricPotential.VOLT,
-    },
-]
-
-
-# -------------------------------------------------------------------------
-# 4) SETUP: CREATE ENTITIES FROM DEFINITIONS
+#   SETUP: CREATE ENTITIES FROM DEFINITIONS
 #    We also show how to create multiple sensors for each battery in battery_units.
 # -------------------------------------------------------------------------
 async def async_setup_entry(
@@ -388,87 +60,38 @@ async def async_setup_entry(
 
     # 4.1) ENERGY SENSORS
     for sensor_def in ENERGY_SENSORS:
-        entities.append(
-            EG4InverterSensor(coordinator, entry, sensor_def, parent_key="energy")
-        )
+        if sensor_def.get("type", "") == "sensor":
+            entities.append(
+                EG4InverterSensor(coordinator, entry, sensor_def, parent_key="energy")
+            )
 
     # 4.2) RUNTIME SENSORS
     for sensor_def in RUNTIME_SENSORS:
-        entities.append(
-            EG4InverterSensor(coordinator, entry, sensor_def, parent_key="runtime")
-        )
+        if sensor_def.get("type", "") == "sensor":
+            entities.append(
+                EG4InverterSensor(coordinator, entry, sensor_def, parent_key="runtime")
+            )
 
     # 4.3) BATTERY SUMMARY SENSORS
     for sensor_def in BATTERY_SUMMARY_SENSORS:
-        entities.append(
-            EG4InverterSensor(coordinator, entry, sensor_def, parent_key="battery")
-        )
+        if sensor_def.get("type", "") == "sensor":
+            entities.append(
+                EG4InverterSensor(coordinator, entry, sensor_def, parent_key="battery")
+            )
 
     # 4.4) PER-BATTERY UNITS
     #     If you want a sensor for each battery in battery_units, create them here:
     battery_data = coordinator.data.get("battery", {})
     battery_units = battery_data.battery_units or []
     for binfo in battery_units:
-        # We'll create a handful of sensors for each physical battery
-        # You can expand this list as needed
-        per_battery_defs = [
-            {
-                "key": "soc",
-                "name": f"Battery {binfo.batterySn} SoC",
-                "unit": PERCENTAGE,
-            },
-            {
-                "key": "totalVoltage",
-                "name": f"Battery {binfo.batterySn} Voltage",
-                "unit": UnitOfElectricPotential.VOLT,
-                "scale": 0.01,  # 5333 => 53.33 if needed
-            },
-            {
-                "key": "current",
-                "name": f"Battery {binfo.batterySn} Current",
-                "unit": "A",  # negative => discharge
-            },
-            {
-                "key": "soh",
-                "name": f"Battery {binfo.batterySn} SoH",
-                "unit": PERCENTAGE,
-            },
-            {
-                "key": "cycleCnt",
-                "name": f"Battery {binfo.batterySn} Cycles",
-                "unit": None,
-            },
-            {
-                "key": "batMaxCellTemp",
-                "name": f"Battery {binfo.batterySn} Max Cell Temperature",
-                "unit": UnitOfTemperature.CELSIUS,
-                "scale": 0.1,
-            },
-            {
-                "key": "batMinCellTemp",
-                "name": f"Battery {binfo.batterySn} Min Cell Temperature",
-                "unit": UnitOfTemperature.CELSIUS,
-                "scale": 0.1,
-            },
-            {
-                "key": "batMaxCellVoltage",
-                "name": f"Battery {binfo.batterySn} Max Cell Voltage",
-                "unit": UnitOfElectricPotential.VOLT,
-                "scale": 0.001,
-            },
-            {
-                "key": "batMinCellVoltage",
-                "name": f"Battery {binfo.batterySn} Min Cell Voltage",
-                "unit": UnitOfElectricPotential.VOLT,
-                "scale": 0.001,
-            },
-            {
-                "key": "fwVersionText",
-                "name": f"Battery {binfo.batterySn} Firmware Version",
-                "unit": None,
-            },
-        ]
-        for subdef in per_battery_defs:
+        for subdef in PER_BATTERY_DEFS:
+            subdef = subdef.copy()
+            if subdef["type"] != "sensor":
+                continue
+            name_template = subdef.get("name", "")
+            dynamic_name = name_template.format(binfo=binfo)
+            if name_template != dynamic_name:
+                subdef["name"] = dynamic_name
             entities.append(EG4PerBatterySensor(coordinator, entry, binfo, subdef))
 
     async_add_entities(entities)
@@ -528,13 +151,15 @@ class EG4InverterSensor(EG4BaseSensor):
         if icon:
             self._attr_icon = icon
 
-        device_class = sensor_def.get("device_class")
-        if device_class:
-            self._attr_device_class = device_class
+        self._attr_device_class = sensor_def.get("device_class")
+        self._attr_state_class = sensor_def.get("state_class")
 
         # Unit of measurement
         self._unit = sensor_def.get("unit")
         self._scale = sensor_def.get("scale", 1.0)
+        calc = sensor_def.get("calc")
+        if calc:
+            self._calc = calc
 
     @property
     def native_unit_of_measurement(self):
@@ -546,7 +171,12 @@ class EG4InverterSensor(EG4BaseSensor):
         try:
             raw_value = getattr(data, self._sensor_def["key"])
         except Exception as e:
-            raw_value = data.get(self._sensor_def["key"])
+            try:
+                raw_value = data.get(self._sensor_def["key"])
+            except Exception as e2:
+                _LOGGER.error(f"{self._sensor_def} with error {e2}")
+                _LOGGER.error(f"Data {vars(data)}")
+                return None
 
         # Special case: parse CO2/Coal text like "367.69 kG"
         if self._sensor_def.get("co2_parse"):
@@ -575,16 +205,20 @@ class EG4PerBatterySensor(EG4BaseSensor):
         self._battery_info = battery_info
         self._sensor_def = sensor_def
 
-        battery_sn = battery_info.batterySn or "Unknown"
+        battery_idx = battery_info.batIndex or "Unknown"
         key = sensor_def["key"]
-        self._attr_unique_id = f"{entry.entry_id}_battery_{battery_sn}_{key}"
-        self._attr_name = sensor_def.get("name", f"{battery_sn} {key}")
+        self._attr_unique_id = f"{entry.entry_id}_battery_{battery_idx}_{key}"
+        self._attr_name = sensor_def.get("name", f"{battery_idx} {key}")
         self._unit = sensor_def.get("unit")
         self._scale = sensor_def.get("scale", 1.0)
-        if sensor_def.get("device_class"):
-            self._attr_device_class = sensor_def.get("device_class")
-        if sensor_def.get("state_class"):
-            self._attr_state_class = sensor_def.get("state_class")
+        self._attr_device_class = sensor_def.get("device_class")
+        self._attr_state_class = sensor_def.get("state_class")
+        icon = sensor_def.get("icon")
+        if icon:
+            self._attr_icon = icon
+        calc = sensor_def.get("calc")
+        if calc:
+            self._calc = calc
 
     @property
     def native_unit_of_measurement(self):

@@ -1,6 +1,6 @@
 # const.py
 DOMAIN = "eg4_inverter"
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "binary_sensor"]
 
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
