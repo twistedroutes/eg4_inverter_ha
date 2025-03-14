@@ -52,7 +52,7 @@ config/
 │   └── eg4_inverter/
 │       ├── __init__.py
 │       ├── manifest.json
-│       ├── services.yaml
+│       ├── sensor.py
 │       └── ...
 ├── configuration.yaml
 ```
