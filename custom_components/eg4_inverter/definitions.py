@@ -313,7 +313,7 @@ RUNTIME_SENSORS = [
     },
     {
         "type": "sensor",
-        "key": "pDischarge",
+        "key": "pDisCharge",
         "name": "Battery Discharging Power",
         "unit": UnitOfPower.WATT,
     },
