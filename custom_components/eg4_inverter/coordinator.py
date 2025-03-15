@@ -71,6 +71,10 @@ class EG4DataCoordinator(DataUpdateCoordinator):
 
         # Cache “old” settings so we don’t lose them in partial updates
         self._cached_settings = None
+        self._cached_runtime = None
+        self._cached_energy = None
+        self._cached_battery = None
+        self._using_cache = False
 
     async def _async_update_data(self):
         """Fetch data from the EG4 Inverter API, called by HA every 'update_interval' seconds."""
@@ -80,22 +84,50 @@ class EG4DataCoordinator(DataUpdateCoordinator):
             self._logged_in = True
 
         # Always fetch runtime data
+        self._using_cache = False
         try:
             _LOGGER.debug("Getting Inverter Data")
             inverter_info = self.api.get_selected_inverter()
             _LOGGER.debug(f"Got Inverter Data: {inverter_info}")
 
             _LOGGER.debug("Getting Runtime Data")
-            runtime_data = await self.api.get_inverter_runtime_async()
+            try:
+                runtime_data = await self.api.get_inverter_runtime_async()
+                if runtime_data != None:
+                    self._cached_runtime = runtime_data
+                else:
+                    self._using_cache = True               
+                    raise Exception("Use Cache")
+            except:
+                runtime_data = self._cached_runtime
             _LOGGER.debug(f"Got Runtime Data: {runtime_data}")
 
             _LOGGER.debug("Getting battery Data")
-            battery_data = await self.api.get_inverter_battery_async()
+            try:
+                battery_data = await self.api.get_inverter_battery_async()
+                if battery_data != None:
+                    self._cached_battery = battery_data
+                else:
+                    self._using_cache = True               
+                    raise Exception("Use Cache")
+            except:
+                battery_data = self._cached_battery
+            
             _LOGGER.debug(f"Got battery Data: {battery_data}")
 
             _LOGGER.debug("Getting energy Data")
-            energy_data = await self.api.get_inverter_energy_async()
+            try:
+                energy_data = await self.api.get_inverter_energy_async()
+                if energy_data != None:
+                    self._cached_energy = energy_data
+                else:
+                    self._using_cache = True               
+                    raise Exception("Use Cache")
+            except:
+                energy_data = self._cached_energy
             _LOGGER.debug(f"Got energy Data: {energy_data}")
+            if energy_data is None:
+                raise Exception
         except Exception as err:
             raise UpdateFailed(f"Error fetching runtime data: {err}") from err
 
