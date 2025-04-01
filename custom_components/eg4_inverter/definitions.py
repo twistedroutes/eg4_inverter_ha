@@ -253,15 +253,29 @@ RUNTIME_SENSORS = [
     },
     {
         "type": "sensor",
-        "key": "vact",  # e.g. 6145 => 61.45 V? Or is it AC voltage in 0.1?
-        "name": "AC Total Voltage",
+        "key": "vacr",  # e.g. 6145 => 61.45 V? Or is it AC voltage in 0.1?
+        "name": "AC Voltage",
         "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,
+        "scale": 0.1,
+    },
+    {
+        "type": "sensor",
+        "key": "vepsr",  # e.g. 6145 => 61.45 V? Or is it AC voltage in 0.1?
+        "name": "EPS Voltage",
+        "unit": UnitOfElectricPotential.VOLT,
+        "scale": 0.1,
     },
     {
         "type": "sensor",
         "key": "fac",
         "name": "AC Frequency",
+        "unit": UnitOfFrequency.HERTZ,
+        "scale": 0.01,
+    },
+    {
+        "type": "sensor",
+        "key": "feps",
+        "name": "EPS Frequency",
         "unit": UnitOfFrequency.HERTZ,
         "scale": 0.01,
     },
@@ -434,7 +448,7 @@ BATTERY_SUMMARY_SENSORS = [
 ]
 
 
-# If you want some "per-battery" definitions that apply to multiple platforms
+# "per-battery" definitions that apply to multiple platforms
 PER_BATTERY_DEFS = [
     {
         "type": "sensor",
@@ -520,4 +534,23 @@ PER_BATTERY_DEFS = [
         "calc": lambda binfo: bool(binfo.noticeInfo),
         "device_class": BinarySensorDeviceClass.TAMPER,
     },
+]
+
+SETTING_SENSORS = [
+    {
+        "type": "sensor",
+        "key": "HOLD_EPS_FREQ_SET",
+        "name": "EG4 EPS Frequency Setting",
+        "unit": None,
+        "unit": UnitOfFrequency.HERTZ,
+        "scale": 1,
+    },
+    {
+        "type": "sensor",
+        "key": "HOLD_EPS_VOLT_SET",
+        "name": "EG4 EPS Voltage Setting",
+        "unit": None,
+        "unit": UnitOfElectricPotential.VOLT,
+        "scale": 1,
+    }
 ]

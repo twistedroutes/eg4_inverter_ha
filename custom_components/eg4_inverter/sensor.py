@@ -27,6 +27,7 @@ from .definitions import (
     BATTERY_SUMMARY_SENSORS,
     ENERGY_SENSORS,
     RUNTIME_SENSORS,
+    SETTING_SENSORS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -72,14 +73,21 @@ async def async_setup_entry(
                 EG4InverterSensor(coordinator, entry, sensor_def, parent_key="runtime")
             )
 
-    # 4.3) BATTERY SUMMARY SENSORS
+    # 4.3) SETTINGS SENSORS
+    for sensor_def in SETTING_SENSORS:
+        if sensor_def.get("type", "") == "sensor":
+            entities.append(
+                EG4InverterSensor(coordinator, entry, sensor_def, parent_key="settings")
+            )
+
+    # 4.4) BATTERY SUMMARY SENSORS
     for sensor_def in BATTERY_SUMMARY_SENSORS:
         if sensor_def.get("type", "") == "sensor":
             entities.append(
                 EG4InverterSensor(coordinator, entry, sensor_def, parent_key="battery")
             )
 
-    # 4.4) PER-BATTERY UNITS
+    # 4.5) PER-BATTERY UNITS
     #     If you want a sensor for each battery in battery_units, create them here:
     battery_data = coordinator.data.get("battery", {})
     battery_units = battery_data.battery_units or []
