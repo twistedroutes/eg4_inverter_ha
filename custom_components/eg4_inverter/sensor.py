@@ -210,13 +210,12 @@ class EG4PerBatterySensor(EG4BaseSensor):
         sensor_def: Dict[str, Any],
     ):
         super().__init__(coordinator, entry)
-        self._battery_info = battery_info
-        self._sensor_def = sensor_def
+        self._sensor_def = sensor_def.copy()
+        self._bat_index = battery_info.batIndex
 
-        battery_idx = battery_info.batIndex or "Unknown"
         key = sensor_def["key"]
-        self._attr_unique_id = f"{entry.entry_id}_battery_{battery_idx}_{key}"
-        self._attr_name = sensor_def.get("name", f"{battery_idx} {key}")
+        self._attr_unique_id = f"{entry.entry_id}_battery_{self._bat_index}_{key}"
+        self._attr_name = sensor_def.get("name", f"{self._bat_index} {key}")
         self._unit = sensor_def.get("unit")
         self._scale = sensor_def.get("scale", 1.0)
         self._attr_device_class = sensor_def.get("device_class")
@@ -234,13 +233,19 @@ class EG4PerBatterySensor(EG4BaseSensor):
 
     @property
     def native_value(self):
-        try:
-            raw_value = getattr(self._battery_info, self._sensor_def["key"])
-        except Exception as e:
-            raw_value = self._battery_info.get(self._sensor_def["key"])
+        battery_data = self._coordinator.data.get("battery", {})
+        battery_units = getattr(battery_data, "battery_units", [])
 
-        # Attempt float parse if there's a unit or scale
+        # Lookup battery by index
+        target = next((b for b in battery_units if getattr(b, "batIndex", None) == self._bat_index), None)
+        if target is None:
+            return None
+
+        try:
+            raw_value = getattr(target, self._sensor_def["key"])
+        except Exception:
+            raw_value = target.get(self._sensor_def["key"])
+
         if self._unit or self._scale != 1.0:
             return parse_float(raw_value, self._scale)
-
         return raw_value

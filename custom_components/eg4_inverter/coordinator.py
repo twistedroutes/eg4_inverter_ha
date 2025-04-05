@@ -1,3 +1,4 @@
+import copy
 import logging
 from datetime import timedelta
 
@@ -86,6 +87,7 @@ class EG4DataCoordinator(DataUpdateCoordinator):
         # Always fetch runtime data
         self._using_cache = False
         try:
+            _LOGGER.debug("Getting EG4 Data")
             _LOGGER.debug("Getting Inverter Data")
             inverter_info = self.api.get_selected_inverter()
             _LOGGER.debug(f"Got Inverter Data: {inverter_info}")
@@ -94,11 +96,12 @@ class EG4DataCoordinator(DataUpdateCoordinator):
             try:
                 runtime_data = await self.api.get_inverter_runtime_async()
                 if runtime_data != None:
-                    self._cached_runtime = runtime_data
+                    self._cached_runtime = copy.deepcopy(runtime_data)
                 else:
                     self._using_cache = True               
                     raise Exception("Use Cache")
             except:
+                _LOGGER.debug(f"Using Cached runtime Data")
                 runtime_data = self._cached_runtime
             _LOGGER.debug(f"Got Runtime Data: {runtime_data}")
 
@@ -106,24 +109,27 @@ class EG4DataCoordinator(DataUpdateCoordinator):
             try:
                 battery_data = await self.api.get_inverter_battery_async()
                 if battery_data != None:
-                    self._cached_battery = battery_data
+                    self._cached_battery = copy.deepcopy(battery_data)
                 else:
                     self._using_cache = True               
                     raise Exception("Use Cache")
             except:
+                _LOGGER.debug(f"Using Cached battery Data")
                 battery_data = self._cached_battery
             
             _LOGGER.debug(f"Got battery Data: {battery_data}")
+            _LOGGER.debug(f"Got battery Unit Data: {battery_data.battery_units}")
 
             _LOGGER.debug("Getting energy Data")
             try:
                 energy_data = await self.api.get_inverter_energy_async()
                 if energy_data != None:
-                    self._cached_energy = energy_data
+                    self._cached_energy = copy.deepcopy(energy_data)
                 else:
                     self._using_cache = True               
                     raise Exception("Use Cache")
             except:
+                _LOGGER.debug(f"Using Cached energy Data")
                 energy_data = self._cached_energy
             _LOGGER.debug(f"Got energy Data: {energy_data}")
             if energy_data is None:
@@ -144,7 +150,7 @@ class EG4DataCoordinator(DataUpdateCoordinator):
         if need_settings:
             try:
                 settings_data = await self.api.read_settings_async()
-                self._cached_settings = settings_data
+                self._cached_settings = copy.deepcopy(settings_data)
                 self._last_settings_fetch = now
             except Exception as err:
                 _LOGGER.warning("Failed to update settings: %s", err)
