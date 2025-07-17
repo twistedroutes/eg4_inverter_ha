@@ -398,7 +398,7 @@ RUNTIME_SENSORS = [
     },
     {
         "type": "sensor",
-        "key": "serverTime",
+        "key": "deviceTime",
         "name": "Last Update",
     },
     {
