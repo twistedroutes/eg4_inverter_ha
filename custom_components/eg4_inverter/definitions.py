@@ -82,7 +82,7 @@ ENERGY_SENSORS = [
     {
         "type": "sensor",
         "key": "totalChargingText",
-        "name": "Battery Discharging Total",
+        "name": "Battery Charging Total",
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "icon": "mdi:battery-charging",
         "description": "Lifetime battery charge (kWh)",
@@ -208,10 +208,16 @@ RUNTIME_SENSORS = [
     },
     {
         "type": "sensor",
+        "key": "batParallelNum",
+        "name": "Battery Parallel Number",
+        "icon": "mdi:battery-plus",
+    },
+    {
+        "type": "sensor",
         "key": "vpv1",
         "name": "PV1 Voltage",
         "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,  # if 2098 => 20.98, adjust if needed
+        "scale": 0.1,  # if 2098 => 20.98, adjust if needed
         "icon": "mdi:solar-panel",
     },
     {
@@ -219,7 +225,7 @@ RUNTIME_SENSORS = [
         "key": "vpv2",
         "name": "PV2 Voltage",
         "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,
+        "scale": 0.1,
         "icon": "mdi:solar-panel",
     },
     {
@@ -227,8 +233,15 @@ RUNTIME_SENSORS = [
         "key": "vpv3",
         "name": "PV3 Voltage",
         "unit": UnitOfElectricPotential.VOLT,
-        "scale": 0.01,
+        "scale": 0.1,
         "icon": "mdi:solar-panel",
+    },
+    {
+        "type": "sensor",
+        "key": "ppv",
+        "name": "Total PV Power",
+        "unit": UnitOfPower.WATT,
+        "icon": "mdi:flash",
     },
     {
         "type": "sensor",
@@ -264,6 +277,27 @@ RUNTIME_SENSORS = [
         "name": "EPS Voltage",
         "unit": UnitOfElectricPotential.VOLT,
         "scale": 0.1,
+    },
+    {
+        "type": "sensor",
+        "key": "pEpsL1N",
+        "name": "Line 1 Power",
+        "unit": UnitOfPower.WATT,
+        "icon": "mdi:flash",
+    },
+    {
+        "type": "sensor",
+        "key": "pEpsL2N",  
+        "name": "Line 2 Power",
+        "unit": UnitOfPower.WATT,
+        "icon": "mdi:flash",
+    },
+    {
+        "type": "sensor",
+        "key": "peps", 
+        "name": "EPS Watt",
+        "unit": UnitOfPower.WATT,
+        "icon": "mdi:flash",
     },
     {
         "type": "sensor",
@@ -361,6 +395,11 @@ RUNTIME_SENSORS = [
         "key": "genFreq",
         "name": "Generator Frequency",
         "unit": UnitOfFrequency.HERTZ,
+    },
+    {
+        "type": "sensor",
+        "key": "deviceTime",
+        "name": "Last Update",
     },
     {
         "type": "sensor",
