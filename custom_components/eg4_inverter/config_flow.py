@@ -145,9 +145,9 @@ class EG4InverterConfigFlow(ConfigFlow, domain=DOMAIN):
             if "base" not in errors:
                 # Validation was successful, so create a unique id for this instance of your integration
                 # and create the config entry.
-                await self.async_set_unique_id(info.get("title"))
+                await self.async_set_unique_id(user_input[CONF_SERIAL_NUMBER])
                 self._abort_if_unique_id_configured()
-                return self.async_create_entry(title=info["title"], data=user_input)
+                return self.async_create_entry(title=f"{info["title"]} ({user_input[CONF_SERIAL_NUMBER]})", data=user_input)
 
         # Show initial form.
         return self.async_show_form(
@@ -185,9 +185,11 @@ class EG4InverterConfigFlow(ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
+                # Ensure the unique ID matches the serial number
+                await self.async_set_unique_id(user_input[CONF_SERIAL_NUMBER])
+                self._abort_if_unique_id_mismatch()
                 return self.async_update_reload_and_abort(
                     config_entry,
-                    unique_id=config_entry.unique_id,
                     data={**config_entry.data, **user_input},
                     reason="reconfigure_successful",
                 )
