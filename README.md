@@ -5,6 +5,8 @@ This custom component integrates an **EG4 Inverter** with Home Assistant. It ena
 
 This uses an unofficial web API implementation at [https://github.com/twistedroutes/eg4_inverter_api](https://github.com/twistedroutes/eg4_inverter_api)
 
+You may also want to look at [https://github.com/joyfulhouse/eg4_web_monitor/](https://github.com/joyfulhouse/eg4_web_monitor/) which has taken the work here and enhanced it greatly to support additional inverters and much more!!!
+
 ## Features
 
 - Retrieves status and production metrics from an EG4 Inverter.
